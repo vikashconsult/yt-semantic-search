@@ -1,3 +1,4 @@
+import { Pinecone } from '@pinecone-database/pinecone'
 import { Configuration, OpenAIApi } from 'openai'
 import { PineconeClient } from 'pinecone-client'
 
@@ -12,21 +13,19 @@ async function main() {
     })
   )
 
-  const pinecone = new PineconeClient<types.PineconeCaptionMetadata>({
-    apiKey: process.env.PINECONE_API_KEY,
-    baseUrl: process.env.PINECONE_BASE_URL,
-    namespace: process.env.PINECONE_NAMESPACE
+  const pc = new Pinecone({
+    apiKey: process.env.PINECONE_API_KEY
   })
 
-  const query = 'hello world'
+  const query = 'They help Bhim'
   const { data: embed } = await openai.createEmbedding({
     input: query,
     model: config.openaiEmbeddingModel
   })
 
-  const res = await pinecone.query({
+  const res = await pc.index(process.env.PINECONE_NAMESPACE).query({
     vector: embed.data[0].embedding,
-    topK: 10,
+    topK: 2,
     includeMetadata: true,
     includeValues: false
   })

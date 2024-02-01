@@ -7,11 +7,11 @@ export async function upsertVideoTranscriptsForPlaylist(
   playlist: types.PlaylistDetailsWithTranscripts,
   {
     openai,
-    pinecone,
+    index,
     concurrency = 1
   }: {
     openai: types.OpenAIApi
-    pinecone: types.PineconeClient
+    index: any
     concurrency?: number
   }
 ) {
@@ -61,11 +61,7 @@ export async function upsertVideoTranscriptsForPlaylist(
             videoEmbeddings.length,
             'vectors'
           )
-
-          await pinecone.upsert({
-            vectors: videoEmbeddings
-          })
-
+          index.upsert(videoEmbeddings)
           return video
         } catch (err) {
           console.warn(

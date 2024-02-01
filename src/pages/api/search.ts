@@ -1,5 +1,5 @@
+import { Pinecone } from '@pinecone-database/pinecone'
 import { Configuration, OpenAIApi } from 'openai'
-import { PineconeClient } from 'pinecone-client'
 import QuickLRU from 'quick-lru'
 
 import * as config from '@/lib/config'
@@ -14,12 +14,6 @@ const openai = new OpenAIApi(
     apiKey: process.env.OPENAI_API_KEY
   })
 )
-
-const pinecone = new PineconeClient<types.PineconeCaptionMetadata>({
-  apiKey: process.env.PINECONE_API_KEY,
-  baseUrl: process.env.PINECONE_BASE_URL,
-  namespace: process.env.PINECONE_NAMESPACE
-})
 
 const embeddingCache = new QuickLRU<string, number[]>({
   maxSize: 4096
@@ -54,9 +48,13 @@ export default createAPIHandler<SearchQuery, never, SearchResult[]>(
         embeddingCache.set(inputL, inputEmbedding)
       }
 
-      const results = await pinecone.query({
+      const pc = new Pinecone({
+        apiKey: process.env.PINECONE_API_KEY
+      })
+
+      const results = await pc.index(process.env.PINECONE_NAMESPACE).query({
         vector: inputEmbedding,
-        topK: limit,
+        topK: 2,
         includeMetadata: true,
         includeValues: false
       })
@@ -80,7 +78,6 @@ export default createAPIHandler<SearchQuery, never, SearchResult[]>(
             )
         }
         searchResult.matchedHtml = html
-
         return searchResult as SearchResult
       })
     }

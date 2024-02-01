@@ -16,7 +16,7 @@ export async function getEmbeddingsForVideoTranscript({
   title,
   openai,
   model = config.openaiEmbeddingModel,
-  maxInputTokens = 100, // TODO???
+  maxInputTokens = 100000, // TODO???
   concurrency = 4
 }: {
   transcript: types.Transcript

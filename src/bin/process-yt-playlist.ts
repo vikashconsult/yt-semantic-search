@@ -1,7 +1,7 @@
 import * as fs from 'node:fs/promises'
 
+import { Pinecone } from '@pinecone-database/pinecone'
 import { Configuration, OpenAIApi } from 'openai'
-import { PineconeClient } from 'pinecone-client'
 
 import * as types from '@/server/types'
 import '@/server/config'
@@ -14,11 +14,10 @@ async function main() {
     })
   )
 
-  const pinecone = new PineconeClient<types.PineconeCaptionMetadata>({
-    apiKey: process.env.PINECONE_API_KEY,
-    baseUrl: process.env.PINECONE_BASE_URL,
-    namespace: process.env.PINECONE_NAMESPACE
+  const pinecone = new Pinecone({
+    apiKey: process.env.PINECONE_API_KEY
   })
+  const index = pinecone.index('askmeanything')
 
   const playlistId = process.env.YOUTUBE_PLAYLIST_ID
   const playlistDetailsWithTranscripts: types.PlaylistDetailsWithTranscripts =
@@ -26,7 +25,7 @@ async function main() {
 
   await upsertVideoTranscriptsForPlaylist(playlistDetailsWithTranscripts, {
     openai,
-    pinecone
+    index
   })
 }
 
